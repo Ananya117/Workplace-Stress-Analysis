@@ -1,36 +1,10 @@
-# 💼 Workplace Stress Analysis using Ensemble Machine Learning
+# 💼 Workplace Stress Analysis Machine Learning or Deep Learning
 
 **📍 Research Internship – CEAT, VIT Chennai**
 
 ## 📌 Overview
 
-This project aims to predict psychological stress levels in employees using ensemble-based machine learning techniques on a custom stress dataset. It incorporates feature selection, explainability, and model optimization for reliable workplace stress assessment.
-
-## 🔍 Feature Selection
-
-Applied a combination of:
-
-* Recursive Feature Elimination (RFE)
-* Correlation matrix
-* Lasso Regression
-* Mutual Information Gain
-* XGBoost Feature Importance
-
-These helped narrow down the most relevant predictors from 25+ features to the top 18.
-
-## 🧠 Model Architecture
-
-A stacked ensemble model was trained using:
-
-* **Base Learners**: CatBoost, XGBoost, Random Forest
-* **Meta Learner**: Logistic Regression
-* **Evaluation Metrics**: Accuracy, F1 Score, AUC, Confusion Matrix
-
-## 📈 Explainability & Optimization
-
-* Used **SHAP (SHapley Additive exPlanations)** for model interpretability.
-* Applied **model quantization** and **pruning** techniques to enhance deployment scalability.
-* **Optuna** used for hyperparameter optimization.
+This project focuses on predicting psychological stress levels using machine learning and deep learning techniques. It explores a range of models, ensemble strategies, and feature engineering approaches to develop robust, interpretable, and generalizable stress prediction systems across diverse datasets.
 
 ## ⚙️ Tech Stack
 
