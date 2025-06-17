@@ -92,14 +92,18 @@
 
 **Dataset Used:**
 
-* Base dataset only
+* all
 
 **Accuracy:**
 
-* **\~100%** (on train-test split; full model tuning applied)
+* Base Dataset → **100%**
+* Dataset 1 → **98%**
+* Dataset 2 → **34%**
+* Dataset 3 → **50%**
 
 **Problem Faced:**
 
-* None significant — final model gave perfect results on test split.
-* Will require validation with real-world noisy/incomplete inputs for robustness testing.
+* Final model gave perfect results on test split for base dataset alone - suspected overfitting.
+* overfitting confirmed with cross validation with other three datasets
+
 
