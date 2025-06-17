@@ -1,3 +1,5 @@
+#### Phase 1:
+
 ### 1. CatBoost (Baseline)
 
 **→ Single Gradient Boosting Model on Base Dataset**
@@ -21,8 +23,9 @@
 * Accuracy plateaued around 80–81%.
 * Needed better generalization on minority stress level classes.
 * Insufficient performance for deployment or comparison across datasets.
-
 ---
+---
+#### Phase 2:
 
 ### 2. Stacked Ensemble Model 1 (CatBoost + TabNet → Logistic Regression)
 
@@ -106,4 +109,11 @@
 * Final model gave perfect results on test split for base dataset alone - suspected overfitting.
 * overfitting confirmed with cross validation with other three datasets
 
+---
+---
 
+#### Phase 3:
+
+We’ll run two parallel experiments. 
+* Base‑only pipeline - Augment the original adjusted_stress_dataset_normalized.csv with targeted synth‑oversampling, re‑train the best‑performing stack, and benchmark its uplift. 
+* Dual‑dataset pipeline - Intersect Dataset 2 – Remote Work and Dataset 3 – Mental Health on the four shared signals—working hours, screen time, stress level, and sleep hours (plus the well‑being proxy column)—apply the same preprocessing, train a separate model on each trimmed set, then cross‑test (swap test sets) to measure out‑of‑domain generalization.
