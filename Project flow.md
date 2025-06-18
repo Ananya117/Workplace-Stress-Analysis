@@ -1,119 +1,97 @@
-#### Phase 1:
+### 1. **CatBoost (Baseline Model)**
 
-### 1. CatBoost (Baseline)
+> 🎯 Initial benchmark using gradient boosting.
 
-**→ Single Gradient Boosting Model on Base Dataset**
+* Used `CatBoostClassifier` on the base dataset (`adjusted_stress_dataset_normalized.csv`) with native handling of categorical variables.
+* Applied minimal tuning to get a performance baseline.
 
-**What Was Done:**
-
-* Used the `CatBoostClassifier` with default and light hyperparameter tuning.
-* Handled categorical features natively with CatBoost (no manual encoding needed).
-* Trained on the **base normalized dataset** for initial benchmark performance.
-
-**Dataset Used:**
-
-* Base dataset (adjusted\_stress\_dataset\_normalized.csv)
-
-**Accuracy:**
-
-* **\~81%**
-
-**Problem Faced:**
-
-* Accuracy plateaued around 80–81%.
-* Needed better generalization on minority stress level classes.
-* Insufficient performance for deployment or comparison across datasets.
----
----
-#### Phase 2:
-
-### 2. Stacked Ensemble Model 1 (CatBoost + TabNet → Logistic Regression)
-
-**→ Deep+Boost Hybrid Stacking Model**
-
-**What Was Done:**
-
-* Trained **CatBoost** and **TabNet** separately.
-* Used a `LogisticRegression` as meta-learner in a `StackingClassifier`.
-* Designed to leverage both tabular interpretability (CatBoost) and deep learning sequential reasoning (TabNet).
-
-**Datasets Used:**
-
-* Base Dataset → **90%**
-* Dataset 1 → **98%**
-* Dataset 2 → **34%**
-* Dataset 3 → **\~10%**
-
-**Problem Faced:**
-
-* Massive accuracy drop across datasets 2 and 3.
-* High dataset variance indicates sensitivity to input distribution shifts.
-* Required deeper understanding of feature importance and generalization issues.
+**Accuracy**: \~81%
+**Issue**: Plateaued performance, struggled with minority stress classes.
 
 ---
 
-### 3. Feature Selection (Across 5 Techniques)
+### 2. **Stacked Ensemble: CatBoost + TabNet → Logistic Regression**
 
-**→ Combined Filter, Wrapper, and Embedded Selection**
+> ⚡ Hybrid deep + tree ensemble for improved generalization.
 
-**What Was Done:**
+* Trained CatBoost and TabNet separately.
+* Combined predictions using `LogisticRegression` as a meta-learner via `StackingClassifier`.
+* Aimed to merge CatBoost’s interpretability with TabNet’s deep-sequential modeling.
 
-* Applied **5 different selection methods** to identify the most relevant features:
+**Accuracies**:
+
+* Base Dataset → 90%
+* Dataset 1 → 98%
+* Dataset 2 → 34%
+* Dataset 3 → \~10%
+
+**Issue**: Extreme performance drop on Datasets 2 and 3. Sensitive to input distribution shifts — revealed generalization and robustness concerns.
+
+---
+
+### 🧪 Feature Selection Step (Intermediate)
+
+> Applied multiple methods to reduce noise and focus on informative features:
+
+* **Techniques used**:
 
   * Recursive Feature Elimination (RFE)
-  * Correlation Matrix (removing highly collinear variables)
-  * Lasso Regression (embedded L1 penalty)
-  * Mutual Information Gain
+  * Correlation Matrix filtering
+  * Lasso (L1) Regularization
+  * Mutual Information
   * XGBoost Feature Importance
-* Extracted the **common top features** identified across all five methods for final modeling.
 
-**Dataset Used:**
+* Took the **common top features** across all methods.
 
-* Base dataset
+* Helped improve signal quality for final modeling.
 
-**Outcome:**
-
-* Reduced dimensionality
-* Improved signal-to-noise ratio before final ensemble training
-
-**Problem Faced:**
-
-* Feature rankings varied across methods; union/intersection logic had to be carefully applied
-* Risk of losing informative features during overlap trimming
+**Challenge**: Feature ranks varied by method — needed careful overlap logic to avoid losing useful features.
 
 ---
 
-### 4. Stacked Ensemble Model 2 (CatBoost + XGBoost + Random Forest → Logistic Regression)
+### 3. **Stacked Ensemble: CatBoost + XGBoost + Random Forest → Logistic Regression**
 
-**→ All-Tree Stacking Model for Final Performance**
+> 🌳 Tree-only ensemble using selected features.
 
-**What Was Done:**
+* Trained CatBoost, XGBoost, and Random Forest individually.
+* Combined predictions using `LogisticRegression` as a meta-model.
+* Used only the features selected from the previous step.
 
-* Trained three tree-based models: **CatBoost**, **XGBoost**, and **Random Forest**.
-* Combined their outputs in a `StackingClassifier` with **Logistic Regression** as meta-learner.
-* Used only the final selected features (from step 3) as inputs.
+**Accuracies**:
 
-**Dataset Used:**
+* Base Dataset → 100%
+* Dataset 1 → 98%
+* Dataset 2 → 34%
+* Dataset 3 → 50%
 
-* all
-
-**Accuracy:**
-
-* Base Dataset → **100%**
-* Dataset 1 → **98%**
-* Dataset 2 → **34%**
-* Dataset 3 → **50%**
-
-**Problem Faced:**
-
-* Final model gave perfect results on test split for base dataset alone - suspected overfitting.
-* overfitting confirmed with cross validation with other three datasets
+**Issue**: Overfitting on Base Dataset confirmed via cross-validation. Generalization still weak.
 
 ---
+
+### 4. **CatBoost + TabNet (Reduced Dataset 2)**
+
+> 🔍 Evaluation on minimal-feature version of Dataset 2.
+
+* Reduced Dataset 2 to just **4 common features** (lowest correlation but retained across datasets).
+* Used CatBoost and TabNet independently.
+* Optuna used for tuning; SHAP used for CatBoost feature analysis.
+
+**Accuracy**: \~32%
+**Insight**: Better than full-feature version, but still low.
+
 ---
 
-#### Phase 3:
+### 5. **Additional Attempt: Full Dataset 2 with All Features**
 
-We’ll run two parallel experiments. 
-* Base‑only pipeline - Augment the original adjusted_stress_dataset_normalized.csv with targeted synth‑oversampling, re‑train the best‑performing stack, and benchmark its uplift. 
-* Dual‑dataset pipeline - Intersect Dataset 2 – Remote Work and Dataset 3 – Mental Health on the four shared signals—working hours, screen time, stress level, and sleep hours (plus the well‑being proxy column)—apply the same preprocessing, train a separate model on each trimmed set, then cross‑test (swap test sets) to measure out‑of‑domain generalization.
+* Re-ran CatBoost and TabNet on full Dataset 2 using:
+
+  * Optuna for hyperparameter tuning
+  * SHAP for explainability
+
+**Accuracies**:
+
+* CatBoost → \~12%
+* TabNet → \~11%
+  **Observation**:
+* Highly non-linear, weak correlation between input features and `Stress_Level`.
+* Models failed to learn meaningful decision boundaries → deeper modeling required.
